@@ -1,0 +1,26 @@
+body {
+  width: 100%;
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+.navbar {
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-item {
+  display: flex;
+  margin-top: 5px;
+}
+
+.nav-link-button {
+  width: 100%;
+  background-color: #d2d9e0;
+  border: 5px solid #91a3b4;
+  border-radius: 20px;
+  width: 100%;
+  text-align: center;
+  text-decoration: none;
+  color: black;
+  font-size: 1.5em;
+}
