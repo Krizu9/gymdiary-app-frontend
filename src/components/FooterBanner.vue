@@ -1,6 +1,6 @@
 <template>
   <footer class="footer">
-    <p>Links may be coming here.</p>
+    <p>Happy lifting!</p>
   </footer>
 </template>
 

@@ -10,7 +10,7 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav ml-auto">
           <li class="nav-item">
             <RouterLink to="/" class="nav-link-button">Home</RouterLink>
           </li>
@@ -18,7 +18,16 @@
             <RouterLink to="/login" class="nav-link-button">Login</RouterLink>
           </li>
           <li v-if="authStore.isLoggedIn" class="nav-item">
-            <RouterLink to="/addworkouts" class="nav-link-button">Add Workout</RouterLink>
+            <RouterLink to="/workouts" class="nav-link-button">Workouts Home</RouterLink>
+          </li>
+          <li v-if="authStore.isLoggedIn" class="nav-item">
+            <RouterLink to="/workouts/addTemplate" class="nav-link-button">Add Template</RouterLink>
+          </li>
+          <li v-if="authStore.isLoggedIn" class="nav-item">
+            <RouterLink to="/workouts/check" class="nav-link-button">Check Workouts</RouterLink>
+          </li>
+          <li v-if="authStore.isLoggedIn" class="nav-item">
+            <RouterLink to="/workouts/edit" class="nav-link-button">Edit Workouts</RouterLink>
           </li>
           <li v-if="authStore.isLoggedIn" class="nav-item">
             <button @click="logout" class="nav-link-button">Logout</button>
@@ -29,18 +38,12 @@
   </nav>
 </template>
 
-
 <script setup>
-import { onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();
-
-onMounted(() => {
-  authStore.checkLoginStatus();
-});
 
 const logout = () => {
   authStore.logout();
@@ -121,4 +124,12 @@ const logout = () => {
 .nav-link-button:focus {
   outline: none;
 }
+
+@media (max-width: 768px) {
+  .nav-link-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.25rem;
+  }
+}
+
 </style>
