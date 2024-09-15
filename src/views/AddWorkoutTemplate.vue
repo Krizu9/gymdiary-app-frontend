@@ -30,7 +30,7 @@
       <h1>{{ currentTemplate ? 'Edit Workout Template' : 'Add New Workout Template' }}</h1>
       <form @submit.prevent="handleSubmit" class="workout-form">
         <div class="form-group-field">
-          <label id="workout-name-title" for="workout-name">Workout Name:</label>
+          <label for="workout-name">Workout Name:</label>
           <input 
             type="text" 
             v-model="workoutName" 
@@ -39,22 +39,25 @@
             required
           />
         </div>
+
         <div class="form-group-container">
           <div v-for="(movement, index) in workoutMovements" :key="index" class="form-group">
             <div class="form-group-header">
               <h2>Movement {{ index + 1 }}</h2>
               <button type="button" @click="removeMovement(index)" class="remove-button">Remove</button>
             </div>
+            
             <div class="form-group-field">
               <label :for="'movement-' + index">Movement:</label>
               <input 
                 type="text" 
-                v-model="workoutMovements[index].customMovement" 
+                v-model="workoutMovements[index].movement" 
                 :id="'movement-' + index" 
                 placeholder="Enter custom movement" 
                 required
               />
             </div>
+
             <div class="form-group-field">
               <label :for="'sets-' + index">Sets:</label>
               <input 
@@ -65,6 +68,7 @@
                 required
               />
             </div>
+
             <div class="form-group-field">
               <label :for="'lowest-reps-' + index">Lowest Reps:</label>
               <input 
@@ -75,6 +79,7 @@
                 required
               />
             </div>
+
             <div class="form-group-field">
               <label :for="'highest-reps-' + index">Highest Reps:</label>
               <input 
@@ -87,6 +92,7 @@
             </div>
           </div>
         </div>
+
         <div class="buttons">
           <button type="button" @click="addMovement" class="add-button">+ Add Another Movement</button>
           <button type="submit" class="submit-button">Submit Workout</button>
@@ -101,23 +107,40 @@
 
 
 
+
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 
+// Define the interfaces based on the model
+interface Movement {
+  movement: string;
+  sets: number;
+  lowestReps: number;
+  highestReps: number;
+}
+
+interface WorkoutTemplate {
+  _id?: string;
+  name: string;
+  movements: Movement[];
+}
+
+// Ref variables using the model
 const mode = ref<'view' | 'add'>('view');
 const workoutName = ref('');
-const workoutMovements = ref([{ customMovement: '', sets: 1, lowestReps: 1, highestReps: 1 }]);
-const templates = ref<any[]>([]);
-const currentTemplate = ref<any>(null);
+const workoutMovements = ref<Movement[]>([{ movement: '', sets: 1, lowestReps: 1, highestReps: 1 }]);
+const templates = ref<WorkoutTemplate[]>([]);
+const currentTemplate = ref<WorkoutTemplate | null>(null);
 
+// Functions
 const toggleMode = (newMode: 'view' | 'add') => {
   mode.value = newMode;
   if (newMode === 'view') {
     fetchTemplates();
   } else {
     workoutName.value = '';
-    workoutMovements.value = [{ customMovement: '', sets: 1, lowestReps: 1, highestReps: 1 }];
+    workoutMovements.value = [{ movement: '', sets: 1, lowestReps: 1, highestReps: 1 }];
     currentTemplate.value = null;
   }
 };
@@ -130,19 +153,17 @@ const deleteTemplate = async (templateId: string) => {
   }
 
   try {
-    const response = await axios.delete(`http://localhost:5001/workoutTemplate/delete?id=${templateId}`, {
+    await axios.delete(`http://localhost:5001/workoutTemplate/delete?id=${templateId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    console.log('Template deleted:', response.data);
     fetchTemplates();
   } catch (error) {
     console.error('Error deleting template:', error);
   }
 };
 
-
 const cancelEdit = () => {
-  workoutMovements.value = [{ customMovement: '', sets: 1, lowestReps: 1, highestReps: 1 }];
+  workoutMovements.value = [{ movement: '', sets: 1, lowestReps: 1, highestReps: 1 }];
   workoutName.value = '';
   currentTemplate.value = null;
   toggleMode('view');
@@ -166,7 +187,7 @@ const fetchTemplates = async () => {
 };
 
 const addMovement = () => {
-  workoutMovements.value.push({ customMovement: '', sets: 1, lowestReps: 1, highestReps: 1 });
+  workoutMovements.value.push({ movement: '', sets: 1, lowestReps: 1, highestReps: 1 });
 };
 
 const removeMovement = (index: number) => {
@@ -180,51 +201,38 @@ const handleSubmit = async () => {
     return;
   }
 
-  const workoutTemplate = {
-  name: workoutName.value,
-  movements: workoutMovements.value.map((item, index) => ({
-    index: index + 1, 
-    movement: item.customMovement, 
-    sets: item.sets,
-    lowestReps: item.lowestReps,
-    highestReps: item.highestReps
-  }))
-};
-
+  const workoutTemplate: WorkoutTemplate = {
+    name: workoutName.value,
+    movements: workoutMovements.value
+  };
 
   try {
     const url = currentTemplate.value
       ? `http://localhost:5001/workoutTemplate/update`
       : 'http://localhost:5001/workoutTemplate/create';
-
     const method = currentTemplate.value ? 'put' : 'post';
     const requestPayload = currentTemplate.value
-      ? { id: currentTemplate.value._id, ...workoutTemplate }
+      ? { _id: currentTemplate.value._id, ...workoutTemplate }
       : workoutTemplate;
 
-    console.log('Submitting request to URL:', url);
-    console.log('Request method:', method);
-    console.log('Request payload:', requestPayload);
-
-    const response = await axios[method](url, requestPayload, {
+    await axios[method](url, requestPayload, {
       headers: { Authorization: `Bearer ${token}` }
     });
     
-    console.log('Workout template submitted, response:', response.data);
-    workoutMovements.value = [{ customMovement: '', sets: 1, lowestReps: 1, highestReps: 1 }];
+    workoutMovements.value = [{ movement: '', sets: 1, lowestReps: 1, highestReps: 1 }];
     workoutName.value = '';
-    currentTemplate.value = null; // Clear the current template
-    toggleMode('view'); // Switch to view mode after submission
+    currentTemplate.value = null;
+    toggleMode('view');
   } catch (error) {
     console.error('Error submitting workout template:', error);
   }
 };
 
-const editTemplate = (template: any) => {
+const editTemplate = (template: WorkoutTemplate) => {
   mode.value = 'add';
   workoutName.value = template.name;
-  workoutMovements.value = template.movements.map((movement: any) => ({
-    customMovement: movement.movement,
+  workoutMovements.value = template.movements.map(movement => ({
+    movement: movement.movement,
     sets: movement.sets,
     lowestReps: movement.lowestReps,
     highestReps: movement.highestReps
@@ -239,8 +247,6 @@ onMounted(() => {
 });
 </script>
 
-
-
 <style scoped>
 
 h1{
@@ -254,8 +260,6 @@ h1{
   background-color: #f8f9fa;
   min-height: 100vh;
 }
-
-
 
 .edit-button, .cancel-button, .add-button, .submit-button {
   background-color: #007bff;

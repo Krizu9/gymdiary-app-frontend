@@ -24,6 +24,9 @@
             <RouterLink to="/workouts/addTemplate" class="nav-link-button">Add Template</RouterLink>
           </li>
           <li v-if="authStore.isLoggedIn" class="nav-item">
+            <RouterLink to="/workouts/addWorkout" class="nav-link-button">Add Workout</RouterLink>
+          </li>
+          <li v-if="authStore.isLoggedIn" class="nav-item">
             <RouterLink to="/workouts/check" class="nav-link-button">Check Workouts</RouterLink>
           </li>
           <li v-if="authStore.isLoggedIn" class="nav-item">

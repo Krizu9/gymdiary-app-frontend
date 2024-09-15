@@ -7,6 +7,7 @@ import WorkoutsHome from '../views/WorkoutsHome.vue';
 import AddWorkoutTemplate from '../views/AddWorkoutTemplate.vue';
 import CheckWorkouts from '../views/CheckWorkouts.vue';
 import EditWorkouts from '../views/EditWorkouts.vue';
+import AddWorkout from '../views/AddWorkout.vue';
 
 const routes = [
   {
@@ -37,15 +38,21 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/workouts/check',
+    path: '/workouts/checkWorkout',
     name: 'CheckWorkouts',
     component: CheckWorkouts,
     meta: { requiresAuth: true }
   },
   {
-    path: '/workouts/edit',
+    path: '/workouts/editWorkout',
     name: 'EditWorkouts',
     component: EditWorkouts,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/workouts/addWorkout',
+    name: 'AddWorkout',
+    component: AddWorkout,
     meta: { requiresAuth: true }
   }
 ]
