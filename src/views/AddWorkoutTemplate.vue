@@ -111,25 +111,13 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
-
-// Define the interfaces based on the model
-interface Movement {
-  movement: string;
-  sets: number;
-  lowestReps: number;
-  highestReps: number;
-}
-
-interface WorkoutTemplate {
-  _id?: string;
-  name: string;
-  movements: Movement[];
-}
+import { Movement } from '../models/movements';
+import { WorkoutTemplate } from '../models/workoutTemplate';
 
 // Ref variables using the model
 const mode = ref<'view' | 'add'>('view');
 const workoutName = ref('');
-const workoutMovements = ref<Movement[]>([{ movement: '', sets: 1, lowestReps: 1, highestReps: 1 }]);
+const workoutMovements = ref<Movement[]>([{ movement: '', sets: 1, weight: 1, lowestReps: 1, highestReps: 1 }]);
 const templates = ref<WorkoutTemplate[]>([]);
 const currentTemplate = ref<WorkoutTemplate | null>(null);
 
@@ -140,7 +128,7 @@ const toggleMode = (newMode: 'view' | 'add') => {
     fetchTemplates();
   } else {
     workoutName.value = '';
-    workoutMovements.value = [{ movement: '', sets: 1, lowestReps: 1, highestReps: 1 }];
+    workoutMovements.value = [{ movement: '', sets: 1, lowestReps: 1, weight: 1, highestReps: 1 }];
     currentTemplate.value = null;
   }
 };
@@ -163,7 +151,7 @@ const deleteTemplate = async (templateId: string) => {
 };
 
 const cancelEdit = () => {
-  workoutMovements.value = [{ movement: '', sets: 1, lowestReps: 1, highestReps: 1 }];
+  workoutMovements.value = [{ movement: '', sets: 1, weight : 1, lowestReps: 1, highestReps: 1 }];
   workoutName.value = '';
   currentTemplate.value = null;
   toggleMode('view');
@@ -187,7 +175,7 @@ const fetchTemplates = async () => {
 };
 
 const addMovement = () => {
-  workoutMovements.value.push({ movement: '', sets: 1, lowestReps: 1, highestReps: 1 });
+  workoutMovements.value.push({ movement: '', sets: 1, weight: 1, lowestReps: 1, highestReps: 1 });
 };
 
 const removeMovement = (index: number) => {
@@ -219,7 +207,7 @@ const handleSubmit = async () => {
       headers: { Authorization: `Bearer ${token}` }
     });
     
-    workoutMovements.value = [{ movement: '', sets: 1, lowestReps: 1, highestReps: 1 }];
+    workoutMovements.value = [{ movement: '', sets: 1, weight: 1, lowestReps: 1, highestReps: 1 }];
     workoutName.value = '';
     currentTemplate.value = null;
     toggleMode('view');
@@ -234,6 +222,7 @@ const editTemplate = (template: WorkoutTemplate) => {
   workoutMovements.value = template.movements.map(movement => ({
     movement: movement.movement,
     sets: movement.sets,
+    weight: movement.weight,
     lowestReps: movement.lowestReps,
     highestReps: movement.highestReps
   }));

@@ -1,6 +1,7 @@
 
 export interface Movement {
-  customMovement: string;
+  movement: string;
+  weight: number;
   sets: number;
   lowestReps: number;
   highestReps: number;

@@ -2,7 +2,7 @@
 import { Movement } from './movements';
 
 export interface WorkoutTemplate {
-  id?: string;
+  _id?: string;
   name: string;
   movements: Movement[];
 }

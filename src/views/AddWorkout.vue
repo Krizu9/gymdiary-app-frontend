@@ -1,6 +1,17 @@
 <template>
   <div class="add-workouts">
     <h1>Add Workout</h1>
+
+    <div class="date-picker">
+      <label for="workout-date">Workout Date:</label>
+      <input 
+        type="date" 
+        id="workout-date" 
+        v-model="workoutDate" 
+        :max="maxDate" 
+        required
+      />
+    </div>
     
     <!-- display workout templates -->
     <div v-if="workoutTemplates.length" class="templates-list">
@@ -54,69 +65,133 @@
 </template>
 
 
-<script setup>
-import { ref, onMounted } from 'vue';
+<script setup lang="ts">
+import { ref, onMounted, computed  } from 'vue';
 import axios from 'axios';
+import { WorkoutTemplate } from '../models/workoutTemplate';
+import { Movement } from '../models/movements';
 
-// state to store the workout templates and selected template
-const workoutTemplates = ref([]);
-const selectedTemplate = ref(null);
-const results = ref([]);
+// state for workout templates and selected template
+const workoutTemplates = ref<WorkoutTemplate[]>([]);
+const selectedTemplate = ref<WorkoutTemplate | null>(null);
+const results = ref<{ sets: { weight: number; reps: number }[] }[]>([]);
+const workoutDate = ref<string>(new Date().toISOString().split('T')[0]);
 
+const maxDate = computed(() => {
+  const today = new Date();
+  return today.toISOString().split('T')[0];
+});
+
+// fetch latest previous workout for a template ID
+const fetchPreviousWorkout = async (templateId: string) => {
+  const token = sessionStorage.getItem('authToken');
+  if (!token) {
+    console.error('authentication token not found');
+    return null;
+  }
+
+  try {
+    const response = await axios.get(`http://localhost:5001/workout/${templateId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data; // returns previous workout or null
+  } catch (error) {
+    console.error('error fetching previous workout:', error);
+    return null;
+  }
+};
+
+// select a workout template and initialize results based on previous data
+const selectTemplate = async (template: WorkoutTemplate) => {
+  selectedTemplate.value = template;
+
+  // fetch previous workout data for selected template
+  const previousWorkout = await fetchPreviousWorkout(template._id);
+
+  // initialize results based on previous workout or defaults
+  if (previousWorkout) {
+    results.value = template.movements.map((movement: Movement, index) => {
+      return {
+        sets: Array.from({ length: movement.sets }, (_, setIndex) => ({
+          weight: previousWorkout.movements[index]?.weight[setIndex] || 0, // previous weight or 0
+          reps: previousWorkout.movements[index]?.reps[setIndex] || movement.lowestReps, // previous reps or lowest
+        })),
+      };
+    });
+  } else {
+    // initialize using template defaults
+    results.value = template.movements.map((movement: Movement) => ({
+      sets: Array.from({ length: movement.sets }, () => ({
+        weight: 0, // initialize weight to 0
+        reps: movement.lowestReps, // lowest reps from template
+      })),
+    }));
+  }
+};
+
+// fetch workout templates for logged-in user
 const fetchWorkoutTemplates = async () => {
   const token = sessionStorage.getItem('authToken');
   if (!token) {
-    console.error('Authentication token not found');
+    console.error('authentication token not found');
     return;
   }
 
   try {
     const response = await axios.get('http://localhost:5001/workoutTemplate/byUser', {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
-    workoutTemplates.value = response.data;
+    workoutTemplates.value = response.data as WorkoutTemplate[];
   } catch (error) {
-    console.error('Error fetching templates:', error);
+    console.error('error fetching templates:', error);
   }
 };
 
-const selectTemplate = (template) => {
-  selectedTemplate.value = template;
-  // initialize results
-  results.value = template.movements.map(movement => ({
-    sets: Array.from({ length: movement.sets }, () => ({
-      weight: 0,
-      reps: 0,
-    }))
-  }));
-};
-
+// submit workout results for selected template
 const submitResults = async () => {
   if (!selectedTemplate.value) return;
 
   try {
-    await axios.post('/workoutResults', {
-      templateId: selectedTemplate.value._id,
-      results: results.value,
-    }, {
-      headers: {
-        Authorization: `Bearer ${sessionStorage.getItem('authToken')}`,
+    const token = sessionStorage.getItem('authToken');
+    await axios.post(
+      'http://localhost:5001/workout/create',
+      {
+        workoutTemplateId: selectedTemplate.value._id,
+        date: workoutDate.value, // Use the selected date
+        movements: selectedTemplate.value.movements.map((movement, index) => ({
+          movement: movement.movement,
+          weight: results.value[index].sets.map(set => set.weight),
+          sets: results.value[index].sets.length,
+          reps: results.value[index].sets.map(set => set.reps),
+        })),
       },
-    });
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
     alert('Workout results submitted successfully!');
     selectedTemplate.value = null;
     results.value = [];
+    workoutDate.value = new Date().toISOString().split('T')[0]; // Reset date to today
   } catch (error) {
     console.error('Error submitting workout results:', error);
   }
 };
 
+
+// fetch workout templates on component mount
 onMounted(() => {
   fetchWorkoutTemplates().then(() => {
-    console.log('Fetched workout templates:', workoutTemplates.value);
+    console.log('fetched workout templates:', workoutTemplates.value);
   });
 });
 </script>
+
+
+
 
 <style scoped>
 .add-workouts {
@@ -129,6 +204,7 @@ h1, h2 {
   margin-bottom: 1.25rem;
   font-family: 'Arial', sans-serif;
   color: #333;
+  text-align: center;
 }
 
 .templates-list {
@@ -209,11 +285,19 @@ input[type="number"] {
   background-color: #218838;
 }
 
+.date-picker{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
 
 @media (max-width: 768px) {
   .add-workouts {
     padding: 1rem;
   }
+  
 
   h1, h2 {
     font-size: 1.5rem;
