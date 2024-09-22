@@ -14,12 +14,13 @@
           <h2>{{ template.name }}</h2>
           <ul>
             <li v-for="(movement, index) in template.movements" :key="index">
-              {{ movement.movement }} ({{ movement.sets }} sets, {{ movement.lowestReps }}-{{ movement.highestReps }} reps)
+              {{ movement.movement }} ({{ movement.sets }} sets, {{ movement.lowestReps }}-{{ movement.highestReps }}
+              reps)
             </li>
           </ul>
           <div class="editbutton">
             <button @click="editTemplate(template)" class="edit-button">Edit</button>
-            <button @click="deleteTemplate(template._id)" class="edit-button delete">Delete</button>
+            <button @click="template._id && deleteTemplate(template._id)" class="edit-button delete">Delete</button>
           </div>
         </div>
       </div>
@@ -31,13 +32,7 @@
       <form @submit.prevent="handleSubmit" class="workout-form">
         <div class="form-group-field">
           <label for="workout-name">Workout Name:</label>
-          <input 
-            type="text" 
-            v-model="workoutName" 
-            id="workout-name" 
-            placeholder="Enter workout name" 
-            required
-          />
+          <input type="text" v-model="workoutName" id="workout-name" placeholder="Enter workout name" required />
         </div>
 
         <div class="form-group-container">
@@ -46,49 +41,29 @@
               <h2>Movement {{ index + 1 }}</h2>
               <button type="button" @click="removeMovement(index)" class="remove-button">Remove</button>
             </div>
-            
+
             <div class="form-group-field">
               <label :for="'movement-' + index">Movement:</label>
-              <input 
-                type="text" 
-                v-model="workoutMovements[index].movement" 
-                :id="'movement-' + index" 
-                placeholder="Enter custom movement" 
-                required
-              />
+              <input type="text" v-model="workoutMovements[index].movement" :id="'movement-' + index"
+                placeholder="Enter custom movement" required />
             </div>
 
             <div class="form-group-field">
               <label :for="'sets-' + index">Sets:</label>
-              <input 
-                type="number" 
-                :id="'sets-' + index" 
-                v-model.number="workoutMovements[index].sets" 
-                min="1" 
-                required
-              />
+              <input type="number" :id="'sets-' + index" v-model.number="workoutMovements[index].sets" min="1"
+                required />
             </div>
 
             <div class="form-group-field">
               <label :for="'lowest-reps-' + index">Lowest Reps:</label>
-              <input 
-                type="number" 
-                :id="'lowest-reps-' + index" 
-                v-model.number="workoutMovements[index].lowestReps" 
-                min="1" 
-                required
-              />
+              <input type="number" :id="'lowest-reps-' + index" v-model.number="workoutMovements[index].lowestReps"
+                min="1" required />
             </div>
 
             <div class="form-group-field">
               <label :for="'highest-reps-' + index">Highest Reps:</label>
-              <input 
-                type="number" 
-                :id="'highest-reps-' + index" 
-                v-model.number="workoutMovements[index].highestReps" 
-                min="1" 
-                required
-              />
+              <input type="number" :id="'highest-reps-' + index" v-model.number="workoutMovements[index].highestReps"
+                min="1" required />
             </div>
           </div>
         </div>
@@ -103,16 +78,12 @@
   </div>
 </template>
 
-
-
-
-
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { Movement } from '../models/movements';
 import { WorkoutTemplate } from '../models/workoutTemplate';
+import config from '../config';
 
 // Ref variables using the model
 const mode = ref<'view' | 'add'>('view');
@@ -141,7 +112,7 @@ const deleteTemplate = async (templateId: string) => {
   }
 
   try {
-    await axios.delete(`http://localhost:5001/workoutTemplate/delete?id=${templateId}`, {
+    await axios.delete(`http://${config.apiHost}:${config.backendPort}/workoutTemplate/delete?id=${templateId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     fetchTemplates();
@@ -151,7 +122,7 @@ const deleteTemplate = async (templateId: string) => {
 };
 
 const cancelEdit = () => {
-  workoutMovements.value = [{ movement: '', sets: 1, weight : 1, lowestReps: 1, highestReps: 1 }];
+  workoutMovements.value = [{ movement: '', sets: 1, weight: 1, lowestReps: 1, highestReps: 1 }];
   workoutName.value = '';
   currentTemplate.value = null;
   toggleMode('view');
@@ -165,7 +136,7 @@ const fetchTemplates = async () => {
   }
 
   try {
-    const response = await axios.get('http://localhost:5001/workoutTemplate/byUser', {
+    const response = await axios.get(`http://${config.apiHost}:${config.backendPort}/workoutTemplate/byUser`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     templates.value = response.data;
@@ -196,17 +167,17 @@ const handleSubmit = async () => {
 
   try {
     const url = currentTemplate.value
-      ? `http://localhost:5001/workoutTemplate/update`
-      : 'http://localhost:5001/workoutTemplate/create';
+      ? `http://${config.apiHost}:${config.backendPort}/workoutTemplate/update`
+      : `http://${config.apiHost}:${config.backendPort}/workoutTemplate/create`;
     const method = currentTemplate.value ? 'put' : 'post';
     const requestPayload = currentTemplate.value
-      ? { _id: currentTemplate.value._id, ...workoutTemplate }
+      ? { id: currentTemplate.value._id, ...workoutTemplate }
       : workoutTemplate;
 
     await axios[method](url, requestPayload, {
       headers: { Authorization: `Bearer ${token}` }
     });
-    
+
     workoutMovements.value = [{ movement: '', sets: 1, weight: 1, lowestReps: 1, highestReps: 1 }];
     workoutName.value = '';
     currentTemplate.value = null;
@@ -237,8 +208,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
-h1{
+h1 {
   padding-top: 2rem;
   padding-bottom: 2rem;
   text-align: center;
@@ -250,7 +220,10 @@ h1{
   min-height: 100vh;
 }
 
-.edit-button, .cancel-button, .add-button, .submit-button {
+.edit-button,
+.cancel-button,
+.add-button,
+.submit-button {
   background-color: #007bff;
   color: #ffffff;
   border: none;
@@ -262,7 +235,7 @@ h1{
   display: inline-block;
 }
 
-.delete{
+.delete {
   margin-left: 1rem;
   background-color: #dc3545;
 }
@@ -415,7 +388,8 @@ h1{
   color: #333;
 }
 
-.add-mode select, .add-mode input {
+.add-mode select,
+.add-mode input {
   width: 100%;
   padding: 0.5rem;
   font-size: 1rem;
@@ -429,14 +403,15 @@ h1{
   margin: 0;
 }
 
-.add-mode .add-button, .add-mode .submit-button {
+.add-mode .add-button,
+.add-mode .submit-button {
   margin: 0.5rem;
 }
 
 .buttons {
   display: flex;
   justify-content: center;
-  gap: 1rem; 
+  gap: 1rem;
 }
 
 .add-mode .add-button {
@@ -469,5 +444,3 @@ h1{
   }
 }
 </style>
-
-

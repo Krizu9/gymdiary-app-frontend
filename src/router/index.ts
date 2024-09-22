@@ -8,6 +8,7 @@ import AddWorkoutTemplate from '../views/AddWorkoutTemplate.vue';
 import CheckWorkouts from '../views/CheckWorkouts.vue';
 import EditWorkouts from '../views/EditWorkouts.vue';
 import AddWorkout from '../views/AddWorkout.vue';
+import config from '../config'
 
 const routes = [
   {
@@ -73,7 +74,10 @@ router.beforeEach(async (to, from, next) => {
     next('/login');
   } else if (to.meta.requiresAuth && token) {
     try {
-      const response = await axios.post('http://localhost:5001/user/checkToken', { token });
+      const response = await axios.post(
+        `http://${config.apiHost}:${config.backendPort}/user/checkToken`,
+        { token }
+      )
       if (response.status === 200) {
         console.log('Token is valid');
         next();

@@ -45,6 +45,7 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
 import * as d3 from 'd3';
 import { WorkoutTemplate } from '../models/workoutTemplate';
+import config from '../config';
 
 const workoutTemplates = ref<WorkoutTemplate[]>([]);
 const selectedWorkouts = ref<any[]>([]);
@@ -55,7 +56,7 @@ const fetchWorkoutTemplates = async () => {
   if (!token) return;
 
   try {
-    const response = await axios.get('http://localhost:5001/workoutTemplate/byUser', {
+    const response = await axios.get(`http://${config.apiHost}:${config.backendPort}/workoutTemplate/byUser`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     workoutTemplates.value = response.data;
@@ -69,7 +70,7 @@ const fetchWorkoutsByTemplate = async (templateId: string) => {
   if (!token) return;
 
   try {
-    const response = await axios.get(`http://localhost:5001/workout/all/${templateId}`, {
+    const response = await axios.get(`http://${config.apiHost}:${config.backendPort}/workout/all/${templateId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     selectedWorkouts.value = response.data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -111,7 +112,7 @@ const createGraph = () => {
     workout.movements.map(movement => ({
       movement: movement.movement,
       date: formatDate(workout.date),
-      totalWeight: movement.weight.reduce((sum, weight) => sum + weight, 0)
+      totalWeight: movement.weight.reduce((sum, weight, index) => sum + (weight * movement.reps[index]), 0) // multiply weight by reps
     }))
   );
 

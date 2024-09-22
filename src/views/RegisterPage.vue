@@ -34,6 +34,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
+import config from '../config';
 
 const username = ref('');
 const email = ref('');
@@ -50,7 +51,7 @@ const register = async () => {
   }
 
   try {
-    await axios.post('http://localhost:5001/user/register', {
+    await axios.post(`http://${config.apiHost}:${config.backendPort}/user/register`, {
       name: username.value,
       email: email.value,
       password: password.value,

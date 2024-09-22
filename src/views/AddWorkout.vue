@@ -4,15 +4,9 @@
 
     <div class="date-picker">
       <label for="workout-date">Workout Date:</label>
-      <input 
-        type="date" 
-        id="workout-date" 
-        v-model="workoutDate" 
-        :max="maxDate" 
-        required
-      />
+      <input type="date" id="workout-date" v-model="workoutDate" :max="maxDate" required />
     </div>
-    
+
     <!-- display workout templates -->
     <div v-if="workoutTemplates.length" class="templates-list">
       <h2>Your Workout Templates</h2>
@@ -38,23 +32,13 @@
             <h4>Set {{ setIndex + 1 }}</h4>
             <div class="form-group-field">
               <label :for="'weight-' + index + '-' + setIndex">Weight:</label>
-              <input
-                type="number"
-                :id="'weight-' + index + '-' + setIndex"
-                v-model.number="results[index].sets[setIndex].weight"
-                min="0"
-                required
-              />
+              <input type="number" :id="'weight-' + index + '-' + setIndex"
+                v-model.number="results[index].sets[setIndex].weight" min="0" required />
             </div>
             <div class="form-group-field">
               <label :for="'reps-' + index + '-' + setIndex">Reps:</label>
-              <input
-                type="number"
-                :id="'reps-' + index + '-' + setIndex"
-                v-model.number="results[index].sets[setIndex].reps"
-                min="1"
-                required
-              />
+              <input type="number" :id="'reps-' + index + '-' + setIndex"
+                v-model.number="results[index].sets[setIndex].reps" min="1" required />
             </div>
           </div>
         </div>
@@ -66,10 +50,12 @@
 
 
 <script setup lang="ts">
-import { ref, onMounted, computed  } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import axios from 'axios';
 import { WorkoutTemplate } from '../models/workoutTemplate';
 import { Movement } from '../models/movements';
+import config from '../config';
+
 
 // state for workout templates and selected template
 const workoutTemplates = ref<WorkoutTemplate[]>([]);
@@ -91,7 +77,7 @@ const fetchPreviousWorkout = async (templateId: string) => {
   }
 
   try {
-    const response = await axios.get(`http://localhost:5001/workout/${templateId}`, {
+    const response = await axios.get(`http://${config.apiHost}:${config.backendPort}/${templateId}`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return response.data; // returns previous workout or null
@@ -106,10 +92,12 @@ const selectTemplate = async (template: WorkoutTemplate) => {
   selectedTemplate.value = template;
 
   // fetch previous workout data for selected template
-  const previousWorkout = await fetchPreviousWorkout(template._id);
+  const previousWorkout = await fetchPreviousWorkout(template._id!);
+
+  console.log('previousWorkout:', previousWorkout);
 
   // initialize results based on previous workout or defaults
-  if (previousWorkout) {
+  if (previousWorkout != null) {
     results.value = template.movements.map((movement: Movement, index) => {
       return {
         sets: Array.from({ length: movement.sets }, (_, setIndex) => ({
@@ -127,7 +115,10 @@ const selectTemplate = async (template: WorkoutTemplate) => {
       })),
     }));
   }
+
+  console.log('results after initialization:', results.value);
 };
+
 
 // fetch workout templates for logged-in user
 const fetchWorkoutTemplates = async () => {
@@ -138,7 +129,7 @@ const fetchWorkoutTemplates = async () => {
   }
 
   try {
-    const response = await axios.get('http://localhost:5001/workoutTemplate/byUser', {
+    const response = await axios.get(`http://${config.apiHost}:${config.backendPort}/workoutTemplate/byUser`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     workoutTemplates.value = response.data as WorkoutTemplate[];
@@ -154,15 +145,15 @@ const submitResults = async () => {
   try {
     const token = sessionStorage.getItem('authToken');
     await axios.post(
-      'http://localhost:5001/workout/create',
+      `http://${config.apiHost}:${config.backendPort}/workout/create`,
       {
         workoutTemplateId: selectedTemplate.value._id,
         date: workoutDate.value, // Use the selected date
-        movements: selectedTemplate.value.movements.map((movement, index) => ({
+        movements: selectedTemplate.value.movements.map((movement: Movement, index: number) => ({
           movement: movement.movement,
-          weight: results.value[index].sets.map(set => set.weight),
+          weight: results.value[index].sets.map((set: { weight: number; reps: number }) => set.weight),
           sets: results.value[index].sets.length,
-          reps: results.value[index].sets.map(set => set.reps),
+          reps: results.value[index].sets.map((set: { weight: number; reps: number }) => set.reps),
         })),
       },
       {
@@ -200,7 +191,8 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-h1, h2 {
+h1,
+h2 {
   margin-bottom: 1.25rem;
   font-family: 'Arial', sans-serif;
   color: #333;
@@ -285,7 +277,7 @@ input[type="number"] {
   background-color: #218838;
 }
 
-.date-picker{
+.date-picker {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -297,9 +289,10 @@ input[type="number"] {
   .add-workouts {
     padding: 1rem;
   }
-  
 
-  h1, h2 {
+
+  h1,
+  h2 {
     font-size: 1.5rem;
   }
 
@@ -320,8 +313,10 @@ input[type="number"] {
   }
 }
 
-@media (max-width: 480px) { 
-  h1, h2 {
+@media (max-width: 480px) {
+
+  h1,
+  h2 {
     font-size: 1.25rem;
   }
 
@@ -333,5 +328,4 @@ input[type="number"] {
     padding: 0.375rem;
   }
 }
-
 </style>

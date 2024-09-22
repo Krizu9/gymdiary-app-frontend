@@ -25,6 +25,7 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
 import { useAuthStore } from '@/stores/auth';
+import config from '../config';
 
 const username = ref('');
 const password = ref('');
@@ -33,10 +34,11 @@ const authStore = useAuthStore();
 
 const login = async () => {
   try {
-    const response = await axios.post('http://localhost:5001/user/login', {
+    const response = await axios.post(`http://${config.apiHost}:${config.backendPort}/user/login`, {
       name: username.value,
       password: password.value
     });
+
     const { token } = response.data;
     authStore.login(username.value, token);
     router.push('/');
@@ -44,6 +46,7 @@ const login = async () => {
     console.error('Login failed:', error);
   }
 };
+
 </script>
 
 

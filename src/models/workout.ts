@@ -1,4 +1,4 @@
-import { Movement } from './movements';
+import type { Movement } from './movements';
 
 export interface Workout {
     workoutId: string;
