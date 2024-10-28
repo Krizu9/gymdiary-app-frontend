@@ -6,20 +6,19 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     isLoggedIn: false,
     username: ''
-    // additional state if needed
   }),
   actions: {
-    async login(username: string, token: string, userId: string) {
+    async login(username: string, token: string) {
       try {
         console.log('Logging in with token:', token)
         this.isLoggedIn = true
-        this.username = username
+        this.username = username || 'User'
         sessionStorage.setItem('authToken', token)
-        sessionStorage.setItem('username', username)
-        sessionStorage.setItem('userId', userId) // Store the user ID
+        sessionStorage.setItem('username', this.username)
 
-        // Set token for Axios requests
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        if (!axios.defaults.headers.common['Authorization']) {
+          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
+        }
       } catch (error) {
         console.error('Login error:', error)
       }
@@ -31,11 +30,10 @@ export const useAuthStore = defineStore('auth', {
       this.username = ''
       sessionStorage.removeItem('authToken')
       sessionStorage.removeItem('username')
-      sessionStorage.removeItem('userId')
 
-      // Remove Axios token
       delete axios.defaults.headers.common['Authorization']
     },
+
     async checkLoginStatus() {
       const token = sessionStorage.getItem('authToken')
       const username = sessionStorage.getItem('username')
@@ -43,8 +41,7 @@ export const useAuthStore = defineStore('auth', {
 
       if (!token) {
         console.log('No token found in sessionStorage')
-        this.isLoggedIn = false
-        this.username = ''
+        this.logout()
         return
       }
 
@@ -55,16 +52,16 @@ export const useAuthStore = defineStore('auth', {
         )
         console.log('Token validation response:', response.data)
 
-        if (response.data.valid) {
+        if (response.data.response === 'OK!' && response.data.access) {
           this.isLoggedIn = true
-          this.username = username || 'User'
+          this.username = username || 'User' 
         } else {
           console.log('Token invalid, logging out')
           this.logout()
         }
       } catch (error) {
         console.error('Token validation failed:', error)
-        this.logout() // Log out if there's an error in token validation
+        this.logout()
       }
     }
   }

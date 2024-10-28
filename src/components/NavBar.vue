@@ -2,9 +2,6 @@
   <nav class="navbar">
     <div class="container-fluid">
       <RouterLink to="/" class="navbar-brand">Gymdiary-app</RouterLink>
-      <div class="navbar-center">
-        <span v-if="authStore.isLoggedIn" class="navbar-greeting">Hello {{ authStore.username }}!</span>
-      </div>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
               aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -16,9 +13,6 @@
           </li>
           <li v-if="!authStore.isLoggedIn" class="nav-item">
             <RouterLink to="/login" class="nav-link-button">Login</RouterLink>
-          </li>
-          <li v-if="authStore.isLoggedIn" class="nav-item">
-            <RouterLink to="/workouts" class="nav-link-button">Workouts Home</RouterLink>
           </li>
           <li v-if="authStore.isLoggedIn" class="nav-item">
             <RouterLink to="/workouts/addTemplate" class="nav-link-button">Add Template</RouterLink>

@@ -1,40 +1,32 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import axios from 'axios';
-import Home from '../views/HomePage.vue';
-import Login from '../views/LoginPage.vue';
-import Register from '../views/RegisterPage.vue';
-import WorkoutsHome from '../views/WorkoutsHome.vue';
-import AddWorkoutTemplate from '../views/AddWorkoutTemplate.vue';
-import CheckWorkouts from '../views/CheckWorkouts.vue';
-import EditWorkouts from '../views/EditWorkouts.vue';
-import AddWorkout from '../views/AddWorkout.vue';
-import config from '../config'
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
+import Home from '../views/HomePage.vue'
+import Login from '../views/LoginPage.vue'
+import Register from '../views/RegisterPage.vue'
+import AddWorkoutTemplate from '../views/AddWorkoutTemplate.vue'
+import CheckWorkouts from '../views/CheckWorkouts.vue'
+import EditWorkouts from '../views/EditWorkouts.vue'
+import AddWorkout from '../views/AddWorkout.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home,
+    component: Home
   },
   {
     path: '/login',
     name: 'Login',
-    component: Login,
+    component: Login
   },
   {
     path: '/register',
     name: 'Register',
-    component: Register,
-  },
-  {
-    path: '/workouts',
-    name: 'Workouts',
-    component: WorkoutsHome,
-    meta: { requiresAuth: true }
+    component: Register
   },
   {
     path: '/workouts/addTemplate',
-    name: 'AddWorkout Template',
+    name: 'AddWorkoutTemplate',
     component: AddWorkoutTemplate,
     meta: { requiresAuth: true }
   },
@@ -60,43 +52,22 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
-});
+  routes
+})
 
 router.beforeEach(async (to, from, next) => {
-  console.log('Navigating to:', to.path);
-  
-  const token = sessionStorage.getItem('authToken');
-  console.log('Token:', token);
+  console.log('Navigating to:', to.path)
 
-  if (to.meta.requiresAuth && !token) {
-    console.log('Redirecting to login due to no token');
-    next('/login');
-  } else if (to.meta.requiresAuth && token) {
-    try {
-      const response = await axios.post(
-        `http://${config.apiHost}:${config.backendPort}/user/checkToken`,
-        { token }
-      )
-      if (response.status === 200) {
-        console.log('Token is valid');
-        next();
-      } else {
-        sessionStorage.removeItem('authToken');
-        console.log('Token invalid, redirecting to login');
-        next('/login');
-      }
-    } catch (error) {
-      console.error('Token validation error:', error);
-      sessionStorage.removeItem('authToken');
-      next('/login');
-    }
+  const authStore = useAuthStore()
+
+  await authStore.checkLoginStatus()
+
+  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+    console.log('Redirecting to login due to no token')
+    next('/login')
   } else {
-    next();
+    next()
   }
-});
+})
 
-
-
-
-export default router;
+export default router

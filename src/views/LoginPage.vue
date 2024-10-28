@@ -14,12 +14,12 @@
         <button type="submit">Login</button>
       </form>
       <div class="register-link">
-        <p>Don't have an account? <RouterLink to="/register">Register here</RouterLink></p>
+        <p>Don't have an account? <RouterLink to="/register">Register here</RouterLink>
+        </p>
       </div>
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -41,6 +41,9 @@ const login = async () => {
 
     const { token } = response.data;
     authStore.login(username.value, token);
+
+    console.log('Token received:', token);
+
     router.push('/');
   } catch (error) {
     console.error('Login failed:', error);
