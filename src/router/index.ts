@@ -60,14 +60,15 @@ router.beforeEach(async (to, from, next) => {
 
   const authStore = useAuthStore()
 
-  await authStore.checkLoginStatus()
+  const status = await authStore.checkLoginStatus()
 
-  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+  if (to.meta.requiresAuth && !status.isLoggedIn) {
     console.log('Redirecting to login due to no token')
     next('/login')
   } else {
     next()
   }
 })
+
 
 export default router

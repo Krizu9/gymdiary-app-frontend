@@ -42,7 +42,7 @@ export const useAuthStore = defineStore('auth', {
       if (!token) {
         console.log('No token found in sessionStorage')
         this.logout()
-        return
+        return { isLoggedIn: false }
       }
 
       try {
@@ -54,14 +54,17 @@ export const useAuthStore = defineStore('auth', {
 
         if (response.data.response === 'OK!' && response.data.access) {
           this.isLoggedIn = true
-          this.username = username || 'User' 
+          this.username = username || 'User'
+          return { isLoggedIn: true }
         } else {
           console.log('Token invalid, logging out')
           this.logout()
+          return { isLoggedIn: false }
         }
       } catch (error) {
         console.error('Token validation failed:', error)
         this.logout()
+        return { isLoggedIn: false }
       }
     }
   }

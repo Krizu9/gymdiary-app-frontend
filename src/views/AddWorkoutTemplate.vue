@@ -70,7 +70,7 @@
 
         <div class="buttons">
           <button type="button" @click="addMovement" class="add-button">+ Add Another Movement</button>
-          <button type="submit" class="submit-button">Submit Workout</button>
+          <button type="submit" class="submit-button">Submit Workout Template</button>
           <button type="button" @click="cancelEdit" class="cancel-button">Cancel</button>
         </div>
       </form>

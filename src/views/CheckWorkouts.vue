@@ -163,7 +163,7 @@ const createGraph = () => {
 
     svg.append("text")
       .attr("x", width / 2)
-      .attr("y", 10)
+      .attr("y", 5)
       .attr("text-anchor", "middle")
       .style("font-size", "1.5em")
       .text(movementName);
@@ -210,8 +210,8 @@ onUnmounted(() => {
   margin: 5% auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 90%;
-  max-height: 80%;
+  width: 100%;
+  max-height: 95%;
   overflow-y: auto;
 }
 
