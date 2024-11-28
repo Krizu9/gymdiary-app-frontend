@@ -163,7 +163,7 @@ const createGraph = () => {
 
     svg.append("text")
       .attr("x", width / 2)
-      .attr("y", 5)
+      .attr("y", -1)
       .attr("text-anchor", "middle")
       .style("font-size", "1.5em")
       .text(movementName);

@@ -1,39 +1,51 @@
-# gymdiary-app_front_vue
+# GymDiary fullstack-app
 
-This template should help get you started developing with Vue 3 in Vite.
+## Homepage
 
-## Recommended IDE Setup
+![Homepage](image.png)
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Login
 
-## Type Support for `.vue` Imports in TS
+![Loginpage](image-1.png)
+Login returns JWT to handle authentication during usage
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+## Registration
 
-## Customize configuration
+![Registrationpage](image-2.png)
+Registration hashes password with bcryptjs
 
-See [Vite Configuration Reference](https://vitejs.dev/config/).
+## Adding workout template
 
-## Project Setup
+![Adding workout template](image-4.png)
+Creating view of workout templates
 
-```sh
-npm install
-```
+## Viewing workout templates
 
-### Compile and Hot-Reload for Development
+![Viewing workout templates](image-5.png)
+The view to edit or delete workout templates
 
-```sh
-npm run dev
-```
+## Adding workouts
 
-### Type-Check, Compile and Minify for Production
+### Selecting workout
 
-```sh
-npm run build
-```
+![Seleciton of workout](image-6.png)
+The view where user can select workout to do
 
-### Lint with [ESLint](https://eslint.org/)
+### Form
 
-```sh
-npm run lint
-```
+![Form](image-7.png)
+![Form](image-8.png)
+The form created based of workout template
+
+## Viewing workout results
+
+### View of workouts
+
+![Viewing workouts](image-9.png)
+User can view workouts based on workout templates
+
+### View of graphs based on workouts
+
+![First](image-10.png)
+![Second](image-11.png)
+Graphs build with D3.js
